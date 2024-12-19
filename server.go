@@ -80,6 +80,7 @@ func newTraceProvider() (*trace.TracerProvider, error) {
 	traceExporter, err := otlptracehttp.New(
 		context.Background(),
 		otlptracehttp.WithEndpoint(jaegerEndpoint),
+		otlptracehttp.WithInsecure(),
 	)
 	if err != nil {
 		return nil, err

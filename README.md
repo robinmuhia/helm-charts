@@ -109,5 +109,13 @@ go build -o helm-chart-processor
 
 ```bash
 docker build -t helm-chart-processor:latest .
-docker run -p 8080:8080 helm-chart-processor:latest
+docker-compose up --build
+```
+
+## Observability
+
+View traces on
+
+```bash
+http://localhost:16686
 ```
