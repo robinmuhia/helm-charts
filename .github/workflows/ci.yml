@@ -1,0 +1,88 @@
+name: Lint and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+  PORT: ${{ secrets.PORT }}
+  JAEGER_ENDPOINT: ${{  secrets.JAEGER_ENDPOINT }}
+
+jobs:
+  lint:
+    strategy:
+      matrix:
+        go-version: [1.23.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+
+  test:
+    strategy:
+      matrix:
+        go-version: [1.23.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 80
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Go dependencies
+        run: |
+          go mod download
+          go get github.com/axw/gocov/gocov
+          go get github.com/ory/go-acc
+          go install github.com/ory/go-acc
+          go install github.com/axw/gocov/gocov
+
+      - name: Run tests
+        run: |
+          go-acc -o coverage.txt ./... -- -timeout 60m
+          grep -v "generated.go" coverage.txt  > coverage.out
+          go tool cover -html=coverage.out -o coverage.html
+          gocov convert coverage.out > coverage.json
+          gocov report coverage.json > coverage_report.txt
+          tail coverage_report.txt
+
+      - name: Install goveralls
+        env:
+          GO111MODULE: off
+        run: go get github.com/mattn/goveralls
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=coverage.out  -service=github
+      - name: Quality Gate - Test coverage shall be above threshold
+        env:
+          TESTCOVERAGE_THRESHOLD: 90.0
+        run: |
+          echo "Quality Gate: checking if test coverage is above threshold ..."
+          echo "Threshold             : ${TESTCOVERAGE_THRESHOLD} %"
+          totalCoverage=`go tool cover -func=coverage.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
+          echo "Current test coverage : $totalCoverage %"
+          if (( $(echo "$totalCoverage ${TESTCOVERAGE_THRESHOLD}" | awk '{print ($1 >= $2)}') )); then
+              echo "OK"
+          else
+              echo "Current test coverage is below threshold. Please add more tests"
+              echo "Failed"
+              exit 1
+          fi
