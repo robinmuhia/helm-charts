@@ -58,8 +58,8 @@ func (s *Service) fetchImageDetails(image string) (*domain.ImageDetails, error) 
 }
 
 // downloadHelmChart downloads a Helm chart from a URL and saves it locally.
-func (s *Service) downloadHelmChart(url string) (string, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func (s *Service) downloadHelmChart(ctx context.Context, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
@@ -101,10 +101,16 @@ func (s *Service) parseHelmChart(chartPath string) ([]string, error) {
 
 	var images []string
 
-	for _, line := range strings.Split(string(output), "\n") {
+	lines := strings.Split(string(output), "\n")
+
+	for _, line := range lines {
 		if strings.Contains(line, "image:") {
-			image := strings.TrimSpace(strings.Split(line, ":")[1])
-			images = append(images, image)
+			imageParts := strings.Split(line, ": ")
+			if len(imageParts) > 1 {
+				image := strings.TrimSpace(imageParts[1])
+				image = strings.Trim(image, "\"")
+				images = append(images, image)
+			}
 		}
 	}
 
@@ -112,8 +118,8 @@ func (s *Service) parseHelmChart(chartPath string) ([]string, error) {
 }
 
 // ProcessChartHandler handles HTTP requests to process Helm charts.
-func (s *Service) ProcessHelmChart(_ context.Context, path string) ([]*domain.ImageDetails, error) {
-	chartPath, err := s.downloadHelmChart(path)
+func (s *Service) ProcessHelmChart(ctx context.Context, path string) ([]*domain.ImageDetails, error) {
+	chartPath, err := s.downloadHelmChart(ctx, path)
 	if err != nil {
 		return nil, err
 	}

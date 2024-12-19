@@ -115,6 +115,8 @@ func SetupRoutes(r *gin.Engine, usecases *usecases.UsecaseHelmService) {
 
 	r.Use(gin.Recovery())
 
+	apiV1routes := r.Group("api/v1")
+
 	// endpoints
-	r.POST("/helm-link", handlers.ParseHelmLink)
+	apiV1routes.POST("/helm-link", handlers.ParseHelmLink)
 }

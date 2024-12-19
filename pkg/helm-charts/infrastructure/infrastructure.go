@@ -6,7 +6,7 @@ import (
 	"github.com/robinmuhia/helm-charts/pkg/helm-charts/domain"
 )
 
-// Helm is the interface for methods exposed our helm infrastructure
+// Helm is the interface for methods exposed from infrastructure
 type Helm interface {
 	ProcessHelmChart(ctx context.Context, path string) ([]*domain.ImageDetails, error)
 }

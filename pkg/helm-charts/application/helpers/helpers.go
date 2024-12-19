@@ -29,7 +29,7 @@ func ValidateURL(userInputURL string) (string, error) {
 		return "", fmt.Errorf("invalid URL scheme: only HTTP/HTTPS are allowed")
 	}
 
-	trustedDomains := []string{"bitnami.com", "helm.sh", "artifacthub.io", "hashicorp.com", "github.io", "jetstack.io"}
+	trustedDomains := []string{"bitnami.com", "helm.sh", "artifacthub.io", "hashicorp.com", "github.io", "jetstack.io", "github.com"}
 
 	isValidHost := false
 
