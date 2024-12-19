@@ -28,7 +28,7 @@ func (h HandlersInterfacesImpl) ParseHelmLink(c *gin.Context) {
 		return
 	}
 
-	images, err := h.usecase.ProcessHelmChart(c.Request.Context(), urlLink)
+	images, err := h.usecase.ProcessHelmChart(c.Request.Context(), &urlLink)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 

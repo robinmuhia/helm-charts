@@ -7,7 +7,7 @@ import (
 	"github.com/robinmuhia/helm-charts/pkg/helm-charts/domain"
 )
 
-func (u *UsecaseHelmService) ProcessHelmChart(ctx context.Context, urlLink domain.HelmLinkInput) ([]*domain.ImageDetails, error) {
+func (u *UsecaseHelmService) ProcessHelmChart(ctx context.Context, urlLink *domain.HelmLinkInput) ([]*domain.ImageDetails, error) {
 	validPath, err := helpers.ValidateURL(urlLink.Path)
 	if err != nil {
 		return nil, err
