@@ -91,8 +91,7 @@ func SetupRoutes(r *gin.Engine, usecases *usecases.UsecaseHelmService) {
 		ExposeHeaders:    []string{"Content-Length", "Link"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			if origin == "http://localhost:5000" || origin == "http://localhost:4200" ||
-				origin == "http://localhost:8878" || origin == "http://localhost:8080" {
+			if origin == "http://localhost:8080" {
 				return true
 			}
 
@@ -109,7 +108,6 @@ func SetupRoutes(r *gin.Engine, usecases *usecases.UsecaseHelmService) {
 	}
 
 	handlers := rest.NewHandlersInterfaces(usecases)
-	fmt.Println(handlers)
 
 	r.Use(otelgin.Middleware(fmt.Sprintf("helm-chart-%v", environment)))
 

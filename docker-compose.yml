@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    container_name: helm-chart-processor
+    restart: unless-stopped
+    depends_on:
+      - jaeger
+    environment:
+      - ENVIRONMENT=test
+      - PORT=8080
+      - JAEGER_ENDPOINT=jaeger:4318
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: jaeger
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+      - "4318:4318"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
