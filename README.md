@@ -43,3 +43,71 @@ This project provides an API that processes a Helm chart to extract container im
    ```bash
    go run server.go
    ```
+
+## Usage
+
+### API Endpoint
+
+**POST** `/api/v1/helm-link`  
+**Content-Type:** `application/json`
+
+#### Request Example (cURL)
+
+````bash
+curl -X POST http://localhost:8080/api/v1/helm-link \
+-H "Content-Type: application/json" \
+-d '{
+  "url_link": "https://github.com/helm/examples/releases/download/hello-world-0.1.0/hello-world-0.1.0.tgz"
+}'
+
+2. Expected Response
+
+   ```bash
+   [
+    {
+        "image": "nginx:1.16.0",
+        "size": 44815103,
+        "layers": 3
+    }
+   ]
+````
+
+3. In case of an error
+
+   ```bash
+   {
+    "error": "failed to download Helm chart: received status code 404"
+   }
+   ```
+
+## Linting and Testing
+
+1. To lint
+
+```bash
+   golangci-lint run -c .golangci.yaml
+```
+
+2. To run tests
+
+```bash
+   go test ./...
+   go test -coverprofile=coverage.out ./...
+   go tool cover -html=coverage.out
+```
+
+## Deployment
+
+1. You can build the binary and run it as follows;
+
+```bash
+go build -o helm-chart-processor
+./helm-chart-processor
+```
+
+2. Optionally, used docker
+
+```bash
+docker build -t helm-chart-processor:latest .
+docker run -p 8080:8080 helm-chart-processor:latest
+```
