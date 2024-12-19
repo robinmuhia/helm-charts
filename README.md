@@ -1,6 +1,6 @@
 # Helm Chart Image Processor
 
-![Linting and Tests](https://github.com/robinmuhia/helm-charts/actions/workflows/ci.yml/badge.svg)
+![Lint and Tests](https://github.com/robinmuhia/helm-charts/actions/workflows/ci.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/robinmuhia/helm-charts/badge.svg?branch=main)](https://coveralls.io/github/robinmuhia/helm-charts?branch=main)
 
 This project provides an API that processes a Helm chart to extract container image details. The API accepts a Helm chart path, identifies all container images, downloads metadata from their respective registries, and returns the image size and number of layers.
