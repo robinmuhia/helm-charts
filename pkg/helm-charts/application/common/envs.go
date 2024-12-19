@@ -3,8 +3,8 @@ package common
 type EnvironmentVariable string
 
 const (
-	Environment EnvironmentVariable = "ENVIRONMENT"
-	Port   EnvironmentVariable = "PORT"
+	Environment             EnvironmentVariable = "ENVIRONMENT"
+	Port                    EnvironmentVariable = "PORT"
 	JaegerCollectorEndpoint EnvironmentVariable = "JAEGER_ENDPOINT"
 )
 

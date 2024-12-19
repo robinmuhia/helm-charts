@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 
@@ -46,7 +45,7 @@ func isAllowedOrigin(origin string, compiledPatterns []*regexp.Regexp) bool {
 }
 
 // StartServer sets up gin
-func StartServer(ctx context.Context, port int) error {
+func StartServer(_ context.Context, port int) error {
 	r := gin.Default()
 
 	memoryStore := persist.NewMemoryStore(60 * time.Minute)
@@ -99,11 +98,9 @@ func SetupRoutes(r *gin.Engine, _ persist.CacheStore) {
 	environment, err := helpers.GetEnvVar(common.Environment.String())
 	if err != nil {
 		log.Panic(err)
-		os.Exit(1)
 	}
 
-	r.Use(otelgin.Middleware(fmt.Sprintf("helm-chart-%v", environment )))
+	r.Use(otelgin.Middleware(fmt.Sprintf("helm-chart-%v", environment)))
 
 	r.Use(gin.Recovery())
 }
-
