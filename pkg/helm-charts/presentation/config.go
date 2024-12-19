@@ -10,8 +10,11 @@ import (
 
 	"github.com/robinmuhia/helm-charts/pkg/helm-charts/application/common"
 	"github.com/robinmuhia/helm-charts/pkg/helm-charts/application/helpers"
+	"github.com/robinmuhia/helm-charts/pkg/helm-charts/infrastructure"
+	"github.com/robinmuhia/helm-charts/pkg/helm-charts/infrastructure/helm"
+	"github.com/robinmuhia/helm-charts/pkg/helm-charts/presentation/rest"
+	"github.com/robinmuhia/helm-charts/pkg/helm-charts/usecases"
 
-	"github.com/chenyahui/gin-cache/persist"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -46,11 +49,17 @@ func isAllowedOrigin(origin string, compiledPatterns []*regexp.Regexp) bool {
 
 // StartServer sets up gin
 func StartServer(_ context.Context, port int) error {
+	logger := log.New(log.Writer(), "HelmService: ", log.LstdFlags)
+
+	helm := helm.NewHelmService(logger)
+
+	infra := infrastructure.NewInfrastructureInteractor(helm)
+
+	usecases := usecases.NewUsecaseHelmImpl(*infra)
+
 	r := gin.Default()
 
-	memoryStore := persist.NewMemoryStore(60 * time.Minute)
-
-	SetupRoutes(r, memoryStore)
+	SetupRoutes(r, usecases)
 
 	addr := fmt.Sprintf(":%d", port)
 
@@ -61,7 +70,7 @@ func StartServer(_ context.Context, port int) error {
 	return nil
 }
 
-func SetupRoutes(r *gin.Engine, _ persist.CacheStore) {
+func SetupRoutes(r *gin.Engine, usecases *usecases.UsecaseHelmService) {
 	compiledPatterns := compilePatterns(allowedOriginPatterns)
 
 	r.Use(cors.New(cors.Config{
@@ -82,7 +91,6 @@ func SetupRoutes(r *gin.Engine, _ persist.CacheStore) {
 		ExposeHeaders:    []string{"Content-Length", "Link"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			// Specific localhost origins
 			if origin == "http://localhost:5000" || origin == "http://localhost:4200" ||
 				origin == "http://localhost:8878" || origin == "http://localhost:8080" {
 				return true
@@ -100,7 +108,13 @@ func SetupRoutes(r *gin.Engine, _ persist.CacheStore) {
 		log.Panic(err)
 	}
 
+	handlers := rest.NewHandlersInterfaces(usecases)
+	fmt.Println(handlers)
+
 	r.Use(otelgin.Middleware(fmt.Sprintf("helm-chart-%v", environment)))
 
 	r.Use(gin.Recovery())
+
+	// endpoints
+	r.POST("/helm-link", handlers.ParseHelmLink)
 }
