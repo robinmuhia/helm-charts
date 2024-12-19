@@ -77,7 +77,7 @@ jobs:
         run: goveralls -coverprofile=coverage.out -service=github
       - name: Quality Gate - Test coverage shall be above threshold
         env:
-          TESTCOVERAGE_THRESHOLD: 40.0
+          TESTCOVERAGE_THRESHOLD: 80.0
         run: |
           echo "Quality Gate: checking if test coverage is above threshold ..."
           echo "Threshold             : ${TESTCOVERAGE_THRESHOLD} %"
